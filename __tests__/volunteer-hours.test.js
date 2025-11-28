@@ -1,4 +1,8 @@
 /**
+ * @jest-environment jsdom
+ */
+
+/**
  * Jest tests for Student 2 - Volunteer Hours Tracker (Stage One)
  */
 
@@ -7,7 +11,7 @@ const {
     buildVolunteerLogFromForm,
     handleVolunteerFormSubmit,
     getVolunteerLogs
-} = require("../volunteer-hours.js");
+} = require("../js/volunteer-hours.js");
 
 describe("validateVolunteerData", () => {
     test("returns isValid=true for correct data", () => {

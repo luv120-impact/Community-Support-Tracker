@@ -147,7 +147,9 @@ function initVolunteerForm() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", initVolunteerForm);
+if (typeof document !== "undefined") {
+    document.addEventListener("DOMContentLoaded", initVolunteerForm);
+}
 
 // Export pure/testable functions for Jest (Node/CommonJS environment)
 if (typeof module !== "undefined" && module.exports) {

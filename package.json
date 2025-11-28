@@ -1,0 +1,25 @@
+{
+  "name": "community-support-tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luv120-impact/Community-Support-Tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/luv120-impact/Community-Support-Tracker/issues"
+  },
+  "homepage": "https://github.com/luv120-impact/Community-Support-Tracker#readme",
+  "devDependencies": {
+    "jest": "^30.2.0",
+    "jsdom": "^21.1.2"
+  }
+}

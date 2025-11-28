@@ -1,6 +1,8 @@
-// Student 2 - Volunteer Hours Tracker (Stage One)
+// Student 2 - Volunteer Hours Tracker (Stage One + Stage Two)
 
-// Temporary in-memory data store for Stage One (no localStorage yet)
+const VOLUNTEER_STORAGE_KEY = "volunteerLogs";
+
+// Temporary in-memory data store (kept in sync with storage)
 let volunteerLogs = [];
 
 /**
@@ -18,6 +20,40 @@ function getVolunteerLogs() {
  */
 function resetVolunteerLogs() {
     volunteerLogs = [];
+}
+
+/**
+ * Load logs from localStorage. If localStorage is not available, returns an empty array.
+ * @returns {Array<Object>}
+ */
+function loadVolunteerLogsFromStorage() {
+    if (typeof localStorage === "undefined") {
+        return [];
+    }
+
+    const raw = localStorage.getItem(VOLUNTEER_STORAGE_KEY);
+    if (!raw) return [];
+
+    try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed;
+    } catch (error) {
+        console.error("Failed to parse volunteer logs from localStorage", error);
+        return [];
+    }
+}
+
+/**
+ * Save logs to localStorage. Does nothing if localStorage is not available.
+ * @param {Array<Object>} logs
+ */
+function saveVolunteerLogsToStorage(logs) {
+    if (typeof localStorage === "undefined") {
+        return;
+    }
+
+    localStorage.setItem(VOLUNTEER_STORAGE_KEY, JSON.stringify(logs));
 }
 
 /**
@@ -70,6 +106,7 @@ function validateVolunteerData(data) {
 
 /**
  * Builds a volunteer log object from the volunteer form.
+ * (No id here so Stage One tests still pass)
  * @param {HTMLFormElement} form
  * @returns {Object}
  */
@@ -92,9 +129,10 @@ function buildVolunteerLogFromForm(form) {
  * @param {Object<string,string>} errors
  */
 function renderVolunteerErrors(errors) {
-    const errorsContainer = typeof document !== "undefined"
-        ? document.getElementById("volunteer-errors")
-        : null;
+    const errorsContainer =
+        typeof document !== "undefined"
+            ? document.getElementById("volunteer-errors")
+            : null;
 
     if (!errorsContainer) return;
 
@@ -116,11 +154,88 @@ function renderVolunteerErrors(errors) {
 }
 
 /**
+ * Calculates total hours from an array of volunteer logs.
+ * @param {Array<Object>} logs
+ * @returns {number}
+ */
+function calculateTotalHours(logs) {
+    return logs.reduce((sum, log) => {
+        const hours = Number(log.hoursVolunteered);
+        return sum + (isNaN(hours) ? 0 : hours);
+    }, 0);
+}
+
+/**
+ * Renders the volunteer logs into the table body.
+ * @param {Array<Object>} logs
+ */
+function renderVolunteerTable(logs) {
+    const tbody =
+        typeof document !== "undefined"
+            ? document.getElementById("volunteer-table-body")
+            : null;
+
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    logs.forEach(log => {
+        const row = document.createElement("tr");
+
+        const charityCell = document.createElement("td");
+        charityCell.textContent = log.charityName;
+
+        const hoursCell = document.createElement("td");
+        hoursCell.textContent = log.hoursVolunteered;
+
+        const dateCell = document.createElement("td");
+        dateCell.textContent = log.date;
+
+        const ratingCell = document.createElement("td");
+        ratingCell.textContent = log.experienceRating;
+
+        const actionsCell = document.createElement("td");
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.textContent = "Delete";
+        deleteButton.classList.add("delete-log-button");
+        if (log.id) {
+            deleteButton.dataset.logId = log.id;
+        }
+        actionsCell.appendChild(deleteButton);
+
+        row.appendChild(charityCell);
+        row.appendChild(hoursCell);
+        row.appendChild(dateCell);
+        row.appendChild(ratingCell);
+        row.appendChild(actionsCell);
+
+        tbody.appendChild(row);
+    });
+}
+
+/**
+ * Renders the total hours value in the summary section.
+ * @param {Array<Object>} logs
+ */
+function renderTotalHours(logs) {
+    const totalElement =
+        typeof document !== "undefined"
+            ? document.getElementById("total-hours-value")
+            : null;
+
+    if (!totalElement) return;
+
+    const total = calculateTotalHours(logs);
+    totalElement.textContent = total.toString();
+}
+
+/**
  * Handles volunteer form submission.
  * - Prevents default submit
  * - Builds data from form
  * - Validates data
- * - Shows errors or updates temporary data array
+ * - Shows errors or updates data, storage, table, and summary
  * @param {SubmitEvent} event
  */
 function handleVolunteerFormSubmit(event) {
@@ -138,23 +253,78 @@ function handleVolunteerFormSubmit(event) {
     // Clear errors
     renderVolunteerErrors({});
 
-    // Stage One: just store in temporary in-memory array
-    volunteerLogs.push(log);
+    // Stage Two: load current logs from storage, add new log with id, save, and update UI
+    let logs = loadVolunteerLogsFromStorage();
+    const newLogWithId = {
+        ...log,
+        id: Date.now().toString()
+    };
+
+    logs.push(newLogWithId);
+    saveVolunteerLogsToStorage(logs);
+
+    // Keep in-memory array in sync (mainly for tests)
+    volunteerLogs = logs;
+
+    renderVolunteerTable(logs);
+    renderTotalHours(logs);
 
     // Reset form after successful submission
     form.reset();
 }
 
 /**
- * Initializes the volunteer hours form event listener on DOMContentLoaded.
+ * Handles click events on the volunteer table (for delete buttons).
+ * @param {MouseEvent} event
+ */
+function handleVolunteerTableClick(event) {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+
+    if (!target.classList.contains("delete-log-button")) return;
+
+    const logId = target.dataset.logId;
+    if (!logId) return;
+
+    let logs = loadVolunteerLogsFromStorage();
+    const updatedLogs = logs.filter(log => log.id !== logId);
+
+    saveVolunteerLogsToStorage(updatedLogs);
+    volunteerLogs = updatedLogs;
+
+    renderVolunteerTable(updatedLogs);
+    renderTotalHours(updatedLogs);
+}
+
+/**
+ * Initializes the volunteer hours page on DOMContentLoaded:
+ * - Connects form submit handler
+ * - Connects table delete handler
+ * - Loads data from localStorage and renders table + summary
  */
 function initVolunteerForm() {
-    const form = typeof document !== "undefined"
-        ? document.getElementById("volunteer-form")
-        : null;
+    const form =
+        typeof document !== "undefined"
+            ? document.getElementById("volunteer-form")
+            : null;
 
     if (form) {
         form.addEventListener("submit", handleVolunteerFormSubmit);
+    }
+
+    // Load existing data from storage and render
+    const logs = loadVolunteerLogsFromStorage();
+    volunteerLogs = logs;
+    renderVolunteerTable(logs);
+    renderTotalHours(logs);
+
+    const tableBody =
+        typeof document !== "undefined"
+            ? document.getElementById("volunteer-table-body")
+            : null;
+
+    if (tableBody) {
+        tableBody.addEventListener("click", handleVolunteerTableClick);
     }
 }
 
@@ -170,6 +340,12 @@ if (typeof module !== "undefined" && module.exports) {
         buildVolunteerLogFromForm,
         handleVolunteerFormSubmit,
         getVolunteerLogs,
-        resetVolunteerLogs
+        resetVolunteerLogs,
+        loadVolunteerLogsFromStorage,
+        saveVolunteerLogsToStorage,
+        calculateTotalHours,
+        renderVolunteerTable,
+        renderTotalHours,
+        handleVolunteerTableClick
     };
 }

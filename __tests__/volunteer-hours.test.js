@@ -1,4 +1,6 @@
 /**
+ * @jest-environment jsdom
+ *
  * Jest tests for Student 2 - Volunteer Hours Tracker (Stage One)
  */
 
@@ -6,8 +8,9 @@ const {
     validateVolunteerData,
     buildVolunteerLogFromForm,
     handleVolunteerFormSubmit,
-    getVolunteerLogs
-} = require("../volunteer-hours.js");
+    getVolunteerLogs,
+    resetVolunteerLogs
+} = require("../js/volunteer-hours.js");
 
 describe("validateVolunteerData", () => {
     test("returns isValid=true for correct data", () => {
@@ -58,6 +61,11 @@ describe("validateVolunteerData", () => {
 });
 
 describe("buildVolunteerLogFromForm", () => {
+    beforeEach(() => {
+        // Make sure the in-memory logs are clean before using forms
+        resetVolunteerLogs();
+    });
+
     test("builds a correct data object from form elements", () => {
         // Set up a fake DOM form
         document.body.innerHTML = `
@@ -103,7 +111,9 @@ describe("Integration: form submission and DOM errors (Stage One)", () => {
                 </select>
             </form>
         `;
-        // Clear any previous in-memory logs by re-requiring module if needed
+
+        // Reset in-memory logs before each test
+        resetVolunteerLogs();
     });
 
     test("submitting valid form updates temporary data object", () => {
@@ -122,7 +132,7 @@ describe("Integration: form submission and DOM errors (Stage One)", () => {
         handleVolunteerFormSubmit(fakeEvent);
 
         const logs = getVolunteerLogs();
-        expect(logs.length).toBeGreaterThan(0);
+        expect(logs.length).toBe(1);
 
         const lastLog = logs[logs.length - 1];
         expect(lastLog.charityName).toBe("Library Volunteer Program");
@@ -131,7 +141,7 @@ describe("Integration: form submission and DOM errors (Stage One)", () => {
         expect(lastLog.experienceRating).toBe("4");
     });
 
-    test("submitting invalid form shows validation errors in DOM", () => {
+    test("submitting invalid form shows validation errors in DOM and does not add logs", () => {
         const form = document.getElementById("volunteer-form");
 
         // Leave everything blank to trigger validation errors

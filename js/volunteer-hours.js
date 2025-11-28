@@ -1,6 +1,6 @@
-// Stage One - Student 2 (Volunteer Hours Tracker)
+// Student 2 - Volunteer Hours Tracker (Stage One)
 
-// Temporary in-memory data store for Stage One
+// Temporary in-memory data store for Stage One (no localStorage yet)
 let volunteerLogs = [];
 
 /**
@@ -10,6 +10,14 @@ let volunteerLogs = [];
  */
 function getVolunteerLogs() {
     return [...volunteerLogs];
+}
+
+/**
+ * Resets the in-memory volunteer logs array.
+ * Used in tests so each test starts from a clean state.
+ */
+function resetVolunteerLogs() {
+    volunteerLogs = [];
 }
 
 /**
@@ -84,7 +92,10 @@ function buildVolunteerLogFromForm(form) {
  * @param {Object<string,string>} errors
  */
 function renderVolunteerErrors(errors) {
-    const errorsContainer = document.getElementById("volunteer-errors");
+    const errorsContainer = typeof document !== "undefined"
+        ? document.getElementById("volunteer-errors")
+        : null;
+
     if (!errorsContainer) return;
 
     if (!errors || Object.keys(errors).length === 0) {
@@ -130,9 +141,6 @@ function handleVolunteerFormSubmit(event) {
     // Stage One: just store in temporary in-memory array
     volunteerLogs.push(log);
 
-    // For Stage One, we can just log to console for debugging
-    console.log("Volunteer logs:", volunteerLogs);
-
     // Reset form after successful submission
     form.reset();
 }
@@ -141,13 +149,19 @@ function handleVolunteerFormSubmit(event) {
  * Initializes the volunteer hours form event listener on DOMContentLoaded.
  */
 function initVolunteerForm() {
-    const form = document.getElementById("volunteer-form");
+    const form = typeof document !== "undefined"
+        ? document.getElementById("volunteer-form")
+        : null;
+
     if (form) {
         form.addEventListener("submit", handleVolunteerFormSubmit);
     }
 }
 
-document.addEventListener("DOMContentLoaded", initVolunteerForm);
+// Only attach event listener when running in a browser (not during Node import)
+if (typeof document !== "undefined") {
+    document.addEventListener("DOMContentLoaded", initVolunteerForm);
+}
 
 // Export pure/testable functions for Jest (Node/CommonJS environment)
 if (typeof module !== "undefined" && module.exports) {
@@ -155,6 +169,7 @@ if (typeof module !== "undefined" && module.exports) {
         validateVolunteerData,
         buildVolunteerLogFromForm,
         handleVolunteerFormSubmit,
-        getVolunteerLogs
+        getVolunteerLogs,
+        resetVolunteerLogs
     };
 }

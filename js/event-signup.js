@@ -81,6 +81,11 @@ function createSignupObject(data) {
     };
 }
 
+// helper for tests so they can control signupList
+function setSignupList(list) {
+    signupList = list;
+}
+
 // ---------------------------
 // 5. LOCAL STORAGE FUNCTIONS
 // ---------------------------
@@ -93,7 +98,8 @@ function loadSignups(storage) {
     const raw = storage.getItem(STORAGE_KEY);
     if (!raw) return [];
     try {
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
     } catch {
         return [];
     }
@@ -105,6 +111,8 @@ function loadSignups(storage) {
 
 function renderTable(document, list) {
     const tbody = document.getElementById("signupTableBody");
+    if (!tbody) return;
+
     tbody.innerHTML = "";
 
     list.forEach((signup) => {
@@ -137,6 +145,8 @@ function calculateEventSummary(list) {
 
 function renderEventSummary(document, list) {
     const ul = document.getElementById("summaryList");
+    if (!ul) return;
+
     ul.innerHTML = "";
 
     const summary = calculateEventSummary(list);
@@ -146,11 +156,11 @@ function renderEventSummary(document, list) {
         return;
     }
 
-    for (const eventName in summary) {
+    Object.keys(summary).forEach((eventName) => {
         const li = document.createElement("li");
-        li.innerText = `${eventName}: ${summary[eventName]} signup(s)`;
+        li.textContent = `${eventName}: ${summary[eventName]} signup(s)`;
         ul.appendChild(li);
-    }
+    });
 }
 
 // ---------------------------
@@ -195,26 +205,28 @@ function onFormSubmit(event) {
 // 10. INITIALIZE PAGE
 // ---------------------------
 
-function initEventSignupPage(window) {
-    const document = window.document;
+function initEventSignupPage(windowObj) {
+    const doc = windowObj.document;
 
-    signupList = loadSignups(window.localStorage);
+    signupList = loadSignups(windowObj.localStorage);
 
-    renderTable(document, signupList);
-    renderEventSummary(document, signupList);
+    renderTable(doc, signupList);
+    renderEventSummary(doc, signupList);
 
-    document
-        .getElementById("signupForm")
-        .addEventListener("submit", onFormSubmit);
+    const form = doc.getElementById("signupForm");
+    if (form) {
+        form.addEventListener("submit", onFormSubmit);
+    }
 
-    document
-        .getElementById("signupTable")
-        .addEventListener("click", (e) => {
+    const table = doc.getElementById("signupTable");
+    if (table) {
+        table.addEventListener("click", (e) => {
             if (e.target.classList.contains("delete-btn")) {
                 const id = e.target.getAttribute("data-id");
-                deleteSignup(id, document, window.localStorage);
+                deleteSignup(id, doc, windowObj.localStorage);
             }
         });
+    }
 }
 
 // Auto-run in browser
@@ -232,6 +244,7 @@ if (typeof window !== "undefined") {
         calculateEventSummary,
         renderEventSummary,
         deleteSignup,
+        setSignupList,
         onFormSubmit,
         initEventSignupPage,
         STORAGE_KEY

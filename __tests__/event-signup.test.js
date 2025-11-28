@@ -5,7 +5,6 @@
 const { JSDOM } = require("jsdom");
 
 const {
-    getFormValues,
     validateSignup,
     createSignupObject,
     saveSignups,
@@ -14,7 +13,7 @@ const {
     calculateEventSummary,
     renderEventSummary,
     deleteSignup,
-    initEventSignupPage,
+    setSignupList,
     STORAGE_KEY
 } = require("../js/event-signup");
 
@@ -198,14 +197,18 @@ describe("Event Signup – Stage Two Tests", () => {
             { id: "2", name: "B", email: "b@b.com", event: "Cleanup" }
         ];
 
-        localStorageMock.setItem(STORAGE_KEY, JSON.stringify(list));
+        // set global signupList inside module
+        setSignupList(list);
 
-        // render table first
+        // save + render initial state
+        saveSignups(localStorageMock, list);
         renderTable(document, list);
+        renderEventSummary(document, list);
 
-        // delete id "1"
+        // perform delete
         deleteSignup("1", document, localStorageMock);
 
+        // check table rows
         const rows = document.querySelectorAll("#signupTableBody tr");
         expect(rows.length).toBe(1);
         expect(rows[0].getAttribute("data-id")).toBe("2");

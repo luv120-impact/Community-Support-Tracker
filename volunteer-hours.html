@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Volunteer Hours Tracker - Community Support Tracker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- CSS file path -->
+    <!-- path for CSS file -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -21,13 +21,13 @@
     </header>
 
     <main>
+        <!-- Stage One: Form -->
         <section aria-labelledby="volunteer-form-heading">
             <h2 id="volunteer-form-heading">Log Volunteer Hours</h2>
 
             <!-- Validation error messages will appear here -->
             <div id="volunteer-errors" aria-live="polite" class="error-messages"></div>
 
-            <!-- Stage One: Volunteer Hours Form -->
             <form id="volunteer-form" novalidate>
                 <div class="form-group">
                     <label for="charity-name">
@@ -68,7 +68,31 @@
             </form>
         </section>
 
-        <!-- Stage Two will add: table, summary, delete, persistence -->
+        <!-- Stage Two: Table -->
+        <section aria-labelledby="volunteer-table-heading">
+            <h2 id="volunteer-table-heading">Logged Volunteer Hours</h2>
+
+            <table id="volunteer-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Charity</th>
+                        <th scope="col">Hours</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Experience Rating</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="volunteer-table-body">
+                    <!-- Rows inserted by JavaScript -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Stage Two: Summary -->
+        <section aria-labelledby="volunteer-summary-heading">
+            <h2 id="volunteer-summary-heading">Summary</h2>
+            <p>Total Hours Volunteered: <span id="total-hours-value">0</span></p>
+        </section>
     </main>
 
     <footer>

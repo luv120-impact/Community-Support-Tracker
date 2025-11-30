@@ -3,8 +3,8 @@ PiXELL River Financial is committed to supporting the communities in which we li
 
 This project is developed collaboratively by three team members, each responsible for one major component:
 
-Student 1 – Donation Tracker
-ssStudent 2 – Volunteer Hours Tracker
+Student 1 – Donation Trackers
+Student 2 – Volunteer Hours Tracker
 Student 3 – Event Signup
 
 1. Donation Tracker

@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  *
- * Jest tests for Student 2 - Volunteer Hours Tracker (Stage One + Stage Two)
+ * Jest tests Student 2 Volunteer Hours Tracker (Stage One + Stage Two)
  */
 
 const {

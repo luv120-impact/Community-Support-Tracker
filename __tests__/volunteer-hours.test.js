@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  *
- * Jest tests for Student 2 - Volunteer Hours Tracker (Stage One)
+ * Jest tests for Student 2 - Volunteer Hours Tracker (Stage One + Stage Two)
  */
 
 const {
@@ -9,7 +9,13 @@ const {
     buildVolunteerLogFromForm,
     handleVolunteerFormSubmit,
     getVolunteerLogs,
-    resetVolunteerLogs
+    resetVolunteerLogs,
+    loadVolunteerLogsFromStorage,
+    saveVolunteerLogsToStorage,
+    calculateTotalHours,
+    renderVolunteerTable,
+    renderTotalHours,
+    handleVolunteerTableClick
 } = require("../js/volunteer-hours.js");
 
 describe("validateVolunteerData", () => {
@@ -62,12 +68,10 @@ describe("validateVolunteerData", () => {
 
 describe("buildVolunteerLogFromForm", () => {
     beforeEach(() => {
-        // Make sure the in-memory logs are clean before using forms
         resetVolunteerLogs();
     });
 
     test("builds a correct data object from form elements", () => {
-        // Set up a fake DOM form
         document.body.innerHTML = `
             <form id="volunteer-form">
                 <input type="text" name="charityName" value="Animal Rescue" />
@@ -92,9 +96,8 @@ describe("buildVolunteerLogFromForm", () => {
     });
 });
 
-describe("Integration: form submission and DOM errors (Stage One)", () => {
+describe("Integration: Stage One form submission and DOM errors", () => {
     beforeEach(() => {
-        // Reset DOM and internal data before each test
         document.body.innerHTML = `
             <div id="volunteer-errors"></div>
             <form id="volunteer-form">
@@ -111,9 +114,10 @@ describe("Integration: form submission and DOM errors (Stage One)", () => {
                 </select>
             </form>
         `;
-
-        // Reset in-memory logs before each test
         resetVolunteerLogs();
+        if (typeof localStorage !== "undefined") {
+            localStorage.clear();
+        }
     });
 
     test("submitting valid form updates temporary data object", () => {
@@ -144,7 +148,6 @@ describe("Integration: form submission and DOM errors (Stage One)", () => {
     test("submitting invalid form shows validation errors in DOM and does not add logs", () => {
         const form = document.getElementById("volunteer-form");
 
-        // Leave everything blank to trigger validation errors
         form.elements["charityName"].value = "";
         form.elements["hoursVolunteered"].value = "";
         form.elements["date"].value = "";
@@ -160,8 +163,146 @@ describe("Integration: form submission and DOM errors (Stage One)", () => {
         const errorsContainer = document.getElementById("volunteer-errors");
         expect(errorsContainer.innerHTML).not.toBe("");
 
-        // Ensure no new log was added
         const logs = getVolunteerLogs();
         expect(logs.length).toBe(0);
+    });
+});
+
+// Stage Two: unit tests for total hours calculation
+describe("calculateTotalHours", () => {
+    test("sums hours correctly for valid logs", () => {
+        const logs = [
+            { hoursVolunteered: "2" },
+            { hoursVolunteered: "3.5" },
+            { hoursVolunteered: 1 }
+        ];
+
+        const total = calculateTotalHours(logs);
+        expect(total).toBeCloseTo(6.5);
+    });
+
+    test("treats invalid hours as 0", () => {
+        const logs = [
+            { hoursVolunteered: "abc" },
+            { hoursVolunteered: null },
+            { hoursVolunteered: "4" }
+        ];
+
+        const total = calculateTotalHours(logs);
+        expect(total).toBe(4);
+    });
+});
+
+// Stage Two: integration tests for table, storage, deletion, and summary
+describe("Stage Two: table, storage, deletion integration", () => {
+    beforeEach(() => {
+        document.body.innerHTML = `
+            <div id="volunteer-errors"></div>
+            <form id="volunteer-form">
+                <input type="text" id="charity-name" name="charityName" />
+                <input type="number" id="hours-volunteered" name="hoursVolunteered" />
+                <input type="date" id="volunteer-date" name="date" />
+                <select id="experience-rating" name="experienceRating">
+                    <option value="">Select...</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </form>
+            <table id="volunteer-table">
+                <thead>
+                    <tr>
+                        <th>Charity</th>
+                        <th>Hours</th>
+                        <th>Date</th>
+                        <th>Rating</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="volunteer-table-body"></tbody>
+            </table>
+            <p>Total Hours Volunteered: <span id="total-hours-value">0</span></p>
+        `;
+
+        resetVolunteerLogs();
+        if (typeof localStorage !== "undefined") {
+            localStorage.clear();
+        }
+    });
+
+    test("table and summary reflect logs loaded from localStorage", () => {
+        const sampleLogs = [
+            {
+                id: "1",
+                charityName: "Charity A",
+                hoursVolunteered: "2",
+                date: "2025-11-01",
+                experienceRating: "3"
+            },
+            {
+                id: "2",
+                charityName: "Charity B",
+                hoursVolunteered: "3.5",
+                date: "2025-11-02",
+                experienceRating: "4"
+            }
+        ];
+
+        saveVolunteerLogsToStorage(sampleLogs);
+
+        const loadedLogs = loadVolunteerLogsFromStorage();
+        renderVolunteerTable(loadedLogs);
+        renderTotalHours(loadedLogs);
+
+        const rows = document.querySelectorAll("#volunteer-table-body tr");
+        expect(rows.length).toBe(2);
+
+        const totalElement = document.getElementById("total-hours-value");
+        expect(totalElement.textContent).toBe("5.5");
+    });
+
+    test("deleting a record updates storage, table, and total hours", () => {
+        const initialLogs = [
+            {
+                id: "a",
+                charityName: "Charity A",
+                hoursVolunteered: "2",
+                date: "2025-11-01",
+                experienceRating: "3"
+            },
+            {
+                id: "b",
+                charityName: "Charity B",
+                hoursVolunteered: "3",
+                date: "2025-11-02",
+                experienceRating: "4"
+            }
+        ];
+
+        saveVolunteerLogsToStorage(initialLogs);
+
+        const loadedLogs = loadVolunteerLogsFromStorage();
+        renderVolunteerTable(loadedLogs);
+        renderTotalHours(loadedLogs);
+
+        const rowsBefore = document.querySelectorAll("#volunteer-table-body tr");
+        expect(rowsBefore.length).toBe(2);
+
+        const deleteButtonForA = document.querySelector('button[data-log-id="a"]');
+        const fakeClickEvent = { target: deleteButtonForA };
+
+        handleVolunteerTableClick(fakeClickEvent);
+
+        const rowsAfter = document.querySelectorAll("#volunteer-table-body tr");
+        expect(rowsAfter.length).toBe(1);
+
+        const totalElement = document.getElementById("total-hours-value");
+        expect(totalElement.textContent).toBe("3");
+
+        const remainingLogs = loadVolunteerLogsFromStorage();
+        expect(remainingLogs.length).toBe(1);
+        expect(remainingLogs[0].id).toBe("b");
     });
 });

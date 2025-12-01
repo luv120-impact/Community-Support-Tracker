@@ -2,10 +2,10 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Donation Tracker</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -25,31 +25,35 @@
     <main>
 
         <h2>Donation Tracker</h2>
-        <p>Use the form below to add a new charitable donation.</p>
+        <p>Use the form below to record a new donation.</p>
 
         <form id="donation-form">
 
-            <label for="charity-name">Charity Name</label>
-            <input type="text" id="charity-name" />
+            <label for="charity-name">Charity Name *</label>
+            <input type="text" id="charity-name">
 
-            <label for="donation-amount">Donation Amount</label>
-            <input type="number" id="donation-amount" />
+            <label for="donation-amount">Donation Amount *</label>
+            <input type="number" id="donation-amount">
 
-            <label for="donation-date">Date of Donation</label>
-            <input type="date" id="donation-date" />
+            <label for="donation-date">Date of Donation *</label>
+            <input type="date" id="donation-date">
 
             <label for="donor-message">Donor Comment / Message</label>
             <textarea id="donor-message"></textarea>
 
             <button type="submit">Add Donation</button>
+
+            <p id="error-msg"></p>
+
         </form>
 
     </main>
 
-    <!-- FOOTER -->
     <footer>
         <p>© Community Support Tracker</p>
     </footer>
+
+    <script type="module" src="js/donation.js"></script>
 
 </body>
 

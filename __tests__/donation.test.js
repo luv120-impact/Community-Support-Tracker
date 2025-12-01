@@ -1,4 +1,4 @@
-import { validateDonation, createDonationObject } from "../js/donation.js";
+const { validateDonation, createDonationObject } = require("../js/donation.js");
 
 describe("Unit Tests - Validation", () => {
 

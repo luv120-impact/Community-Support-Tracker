@@ -1,4 +1,4 @@
-export function validateDonation(charity, amount, date) {
+function validateDonation(charity, amount, date) {
     if (!charity || !amount || !date) {
         return { valid: false, error: "Missing required fields" };
     }
@@ -10,7 +10,7 @@ export function validateDonation(charity, amount, date) {
     return { valid: true, error: null };
 }
 
-export function createDonationObject(charity, amount, date, message) {
+function createDonationObject(charity, amount, date, message) {
     return {
         charity: charity,
         amount: Number(amount),
@@ -19,7 +19,11 @@ export function createDonationObject(charity, amount, date, message) {
     };
 }
 
-document.getElementById("donation-form").addEventListener("submit", function (event) {
+if (typeof module !== "undefined") {
+    module.exports = { validateDonation, createDonationObject };
+}
+
+document.getElementById("donation-form")?.addEventListener("submit", function (event) {
     event.preventDefault();
 
     const charity = document.getElementById("charity-name").value.trim();
@@ -27,8 +31,9 @@ document.getElementById("donation-form").addEventListener("submit", function (ev
     const date = document.getElementById("donation-date").value.trim();
     const message = document.getElementById("donor-message").value.trim();
 
-    const validation = validateDonation(charity, amount, date);
     const errorMsg = document.getElementById("error-msg");
+
+    const validation = validateDonation(charity, amount, date);
 
     if (!validation.valid) {
         errorMsg.textContent = validation.error;
@@ -36,7 +41,7 @@ document.getElementById("donation-form").addEventListener("submit", function (ev
         return;
     }
 
-    errorMsg.textContent = ""; 
+    errorMsg.textContent = "";
 
     const donationData = createDonationObject(charity, amount, date, message);
 

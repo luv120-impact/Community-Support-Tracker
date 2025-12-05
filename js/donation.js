@@ -45,7 +45,67 @@ document.getElementById("donation-form")?.addEventListener("submit", function (e
 
     const donationData = createDonationObject(charity, amount, date, message);
 
-    console.log("Temporary donation object:", donationData);
+    saveDonation(donationData);
+    addDonationToTable(donationData);
+    updateTotal();
 
-    alert("Donation successfully saved (temporary).");
+    alert("Donation successfully saved.");
+    event.target.reset();
 });
+
+const STORAGE_KEY = "donations";
+const tableBody = document.querySelector("#donation-table tbody");
+const totalAmountDisplay = document.getElementById("total-donated");
+
+document.addEventListener("DOMContentLoaded", loadDonations);
+
+function loadDonations() {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    saved.forEach(d => addDonationToTable(d));
+    updateTotal();
+}
+
+function saveDonation(donation) {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    saved.push(donation);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+}
+
+function addDonationToTable(donation) {
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+        <td>${donation.charity}</td>
+        <td>$${donation.amount.toFixed(2)}</td>
+        <td>${donation.date}</td>
+        <td>${donation.message}</td>
+        <td><button class="delete-btn">Delete</button></td>
+    `;
+
+    row.querySelector(".delete-btn").addEventListener("click", function () {
+        deleteDonation(donation);
+        row.remove();
+        updateTotal();
+    });
+
+    tableBody.appendChild(row);
+}
+
+function deleteDonation(target) {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+    const updated = saved.filter(d =>
+        !(d.charity === target.charity &&
+          d.amount === target.amount &&
+          d.date === target.date &&
+          d.message === target.message)
+    );
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+}
+
+function updateTotal() {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    const total = saved.reduce((sum, d) => sum + d.amount, 0);
+    totalAmountDisplay.textContent = total.toFixed(2);
+}

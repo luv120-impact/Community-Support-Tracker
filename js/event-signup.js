@@ -1,13 +1,5 @@
-// ===========================
-// EVENT SIGNUP – STAGE TWO JS
-// ===========================
-
 const STORAGE_KEY = "eventSignups";
 let signupList = [];
-
-// ---------------------------
-// 1. READ FORM VALUES
-// ---------------------------
 
 function getFormValues(document) {
     return {
@@ -16,10 +8,6 @@ function getFormValues(document) {
         event: document.getElementById("event").value.trim()
     };
 }
-
-// ---------------------------
-// 2. VALIDATION
-// ---------------------------
 
 function validateSignup(data) {
     const errors = {};
@@ -47,30 +35,19 @@ function validateSignup(data) {
     };
 }
 
-// ---------------------------
-// 3. DISPLAY ERROR MESSAGES
-// ---------------------------
-
 function showErrors(document, errors) {
     document.getElementById("nameError").innerText = errors.name || "";
     document.getElementById("emailError").innerText = errors.email || "";
     document.getElementById("eventError").innerText = errors.event || "";
-
-    document.getElementById("formFeedback").innerText =
-        "Fix the errors above.";
+    document.getElementById("formFeedback").innerText = "Fix the errors above.";
 }
 
-// Clear previous errors
 function clearErrors(document) {
     document.getElementById("nameError").innerText = "";
     document.getElementById("emailError").innerText = "";
     document.getElementById("eventError").innerText = "";
     document.getElementById("formFeedback").innerText = "";
 }
-
-// ---------------------------
-// 4. CREATE SIGNUP OBJECT
-// ---------------------------
 
 function createSignupObject(data) {
     return {
@@ -81,14 +58,9 @@ function createSignupObject(data) {
     };
 }
 
-// helper for tests so they can control signupList
 function setSignupList(list) {
     signupList = list;
 }
-
-// ---------------------------
-// 5. LOCAL STORAGE FUNCTIONS
-// ---------------------------
 
 function saveSignups(storage, list) {
     storage.setItem(STORAGE_KEY, JSON.stringify(list));
@@ -104,10 +76,6 @@ function loadSignups(storage) {
         return [];
     }
 }
-
-// ---------------------------
-// 6. RENDER TABLE
-// ---------------------------
 
 function renderTable(document, list) {
     const tbody = document.getElementById("signupTableBody");
@@ -129,10 +97,6 @@ function renderTable(document, list) {
         tbody.appendChild(tr);
     });
 }
-
-// ---------------------------
-// 7. EVENT SUMMARY
-// ---------------------------
 
 function calculateEventSummary(list) {
     const summary = {};
@@ -163,20 +127,12 @@ function renderEventSummary(document, list) {
     });
 }
 
-// ---------------------------
-// 8. DELETE SIGNUP
-// ---------------------------
-
 function deleteSignup(id, document, storage) {
     signupList = signupList.filter((s) => s.id !== id);
     saveSignups(storage, signupList);
     renderTable(document, signupList);
     renderEventSummary(document, signupList);
 }
-
-// ---------------------------
-// 9. FORM SUBMIT HANDLER
-// ---------------------------
 
 function onFormSubmit(event) {
     event.preventDefault();
@@ -201,15 +157,10 @@ function onFormSubmit(event) {
     document.getElementById("formFeedback").innerText = "Signup added!";
 }
 
-// ---------------------------
-// 10. INITIALIZE PAGE
-// ---------------------------
-
 function initEventSignupPage(windowObj) {
     const doc = windowObj.document;
 
     signupList = loadSignups(windowObj.localStorage);
-
     renderTable(doc, signupList);
     renderEventSummary(doc, signupList);
 
@@ -229,24 +180,22 @@ function initEventSignupPage(windowObj) {
     }
 }
 
-// Auto-run in browser
-if (typeof window !== "undefined") {
+module.exports = {
+    getFormValues,
+    validateSignup,
+    createSignupObject,
+    saveSignups,
+    loadSignups,
+    renderTable,
+    calculateEventSummary,
+    renderEventSummary,
+    deleteSignup,
+    setSignupList,
+    onFormSubmit,
+    initEventSignupPage,
+    STORAGE_KEY
+};
+
+if (typeof window !== "undefined" && window.document) {
     window.onload = () => initEventSignupPage(window);
-} else {
-    // Export for Jest tests
-    module.exports = {
-        getFormValues,
-        validateSignup,
-        createSignupObject,
-        saveSignups,
-        loadSignups,
-        renderTable,
-        calculateEventSummary,
-        renderEventSummary,
-        deleteSignup,
-        setSignupList,
-        onFormSubmit,
-        initEventSignupPage,
-        STORAGE_KEY
-    };
 }

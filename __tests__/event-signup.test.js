@@ -54,7 +54,7 @@ describe("Event Signup – Stage Two Tests", () => {
         window = dom.window;
         document = window.document;
 
-        // Mock localStorage
+
         localStorageMock = {
             store: {},
             setItem(key, value) {
@@ -71,9 +71,6 @@ describe("Event Signup – Stage Two Tests", () => {
         window.localStorage = localStorageMock;
     });
 
-    // ------------------------------
-    // 1. VALIDATION TESTS
-    // ------------------------------
 
     test("validateSignup fails if name is empty", () => {
         const data = { name: "", email: "test@test.com", event: "Cleanup" };
@@ -115,10 +112,6 @@ describe("Event Signup – Stage Two Tests", () => {
         expect(result.errors).toEqual({});
     });
 
-    // ------------------------------
-    // 2. STORAGE TESTS
-    // ------------------------------
-
     test("saveSignups stores data in localStorage", () => {
         const list = [{ name: "A", email: "a@a.com", event: "Cleanup" }];
         saveSignups(localStorageMock, list);
@@ -139,9 +132,7 @@ describe("Event Signup – Stage Two Tests", () => {
         expect(loaded).toEqual([]);
     });
 
-    // ------------------------------
-    // 3. TABLE RENDERING TESTS
-    // ------------------------------
+
 
     test("renderTable adds rows to table", () => {
         const list = [
@@ -155,9 +146,6 @@ describe("Event Signup – Stage Two Tests", () => {
         expect(rows[0].children[0].textContent).toBe("A");
     });
 
-    // ------------------------------
-    // 4. SUMMARY TESTS
-    // ------------------------------
 
     test("calculateEventSummary counts events correctly", () => {
         const list = [
@@ -187,9 +175,6 @@ describe("Event Signup – Stage Two Tests", () => {
         expect(items[0].textContent).toBe("Cleanup: 2 signup(s)");
     });
 
-    // ------------------------------
-    // 5. DELETE TEST
-    // ------------------------------
 
     test("deleteSignup removes record and updates DOM", () => {
         const list = [
@@ -197,18 +182,14 @@ describe("Event Signup – Stage Two Tests", () => {
             { id: "2", name: "B", email: "b@b.com", event: "Cleanup" }
         ];
 
-        // set global signupList inside module
         setSignupList(list);
 
-        // save + render initial state
         saveSignups(localStorageMock, list);
         renderTable(document, list);
         renderEventSummary(document, list);
 
-        // perform delete
         deleteSignup("1", document, localStorageMock);
 
-        // check table rows
         const rows = document.querySelectorAll("#signupTableBody tr");
         expect(rows.length).toBe(1);
         expect(rows[0].getAttribute("data-id")).toBe("2");

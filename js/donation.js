@@ -23,7 +23,6 @@ if (typeof module !== "undefined") {
     module.exports = { validateDonation, createDonationObject };
 }
 
-
 document.getElementById("donation-form")?.addEventListener("submit", function (event) {
     event.preventDefault();
 
@@ -46,7 +45,7 @@ document.getElementById("donation-form")?.addEventListener("submit", function (e
 
     const donationData = createDonationObject(charity, amount, date, message);
 
-    saveDonation(donationData);     
+    saveDonation(donationData);      
     addDonationToTable(donationData); 
     updateTotal();                    
 
@@ -55,6 +54,7 @@ document.getElementById("donation-form")?.addEventListener("submit", function (e
     alert("Donation successfully saved.");
     event.target.reset();
 });
+
 
 const STORAGE_KEY = "donations";
 const tableBody = document.querySelector("#donation-table tbody");
@@ -96,12 +96,14 @@ function addDonationToTable(donation) {
 
 function deleteDonation(target) {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
     const updated = saved.filter(d =>
         !(d.charity === target.charity &&
           d.amount === target.amount &&
           d.date === target.date &&
           d.message === target.message)
     );
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 }
 

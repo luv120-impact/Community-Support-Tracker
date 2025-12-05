@@ -165,7 +165,7 @@ describe("Unit Tests - Stage Two Functions", () => {
     test("total updates when a record is deleted", () => {
         localStorage.setItem("donations", JSON.stringify([
             { amount: 30 },
-            { amount: 20 }
+            { amount: 20 } 
         ]));
 
         document.dispatchEvent(new Event("DOMContentLoaded"));

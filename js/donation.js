@@ -23,89 +23,92 @@ if (typeof module !== "undefined") {
     module.exports = { validateDonation, createDonationObject };
 }
 
-document.getElementById("donation-form")?.addEventListener("submit", function (event) {
-    event.preventDefault();
+document.addEventListener("DOMContentLoaded", () => {
 
-    const charity = document.getElementById("charity-name").value.trim();
-    const amount = document.getElementById("donation-amount").value.trim();
-    const date = document.getElementById("donation-date").value.trim();
-    const message = document.getElementById("donor-message").value.trim();
+    const STORAGE_KEY = "donations";
+    const form = document.getElementById("donation-form");
+    const tableBody = document.querySelector("#donation-table tbody");
+    const totalAmountDisplay = document.getElementById("total-donated");
 
-    const errorMsg = document.getElementById("error-msg");
+    loadDonations();
 
-    const validation = validateDonation(charity, amount, date);
+    form?.addEventListener("submit", function (event) {
+        event.preventDefault();
 
-    if (!validation.valid) {
-        errorMsg.textContent = validation.error;
-        errorMsg.style.color = "red";
-        return;
-    }
+        const charity = document.getElementById("charity-name").value.trim();
+        const amount = document.getElementById("donation-amount").value.trim();
+        const date = document.getElementById("donation-date").value.trim();
+        const message = document.getElementById("donor-message").value.trim();
+        const errorMsg = document.getElementById("error-msg");
 
-    errorMsg.textContent = "";
+        const validation = validateDonation(charity, amount, date);
 
-    const donationData = createDonationObject(charity, amount, date, message);
+        if (!validation.valid) {
+            errorMsg.textContent = validation.error;
+            errorMsg.style.color = "red";
+            return;
+        }
 
-    saveDonation(donationData);
-    addDonationToTable(donationData);
-    updateTotal();
+        errorMsg.textContent = "";
 
-    alert("Donation successfully saved.");
-    event.target.reset();
-});
+        const donationData = createDonationObject(charity, amount, date, message);
 
-const STORAGE_KEY = "donations";
-const tableBody = document.querySelector("#donation-table tbody");
-const totalAmountDisplay = document.getElementById("total-donated");
-
-document.addEventListener("DOMContentLoaded", loadDonations);
-
-function loadDonations() {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    saved.forEach(d => addDonationToTable(d));
-    updateTotal();
-}
-
-function saveDonation(donation) {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    saved.push(donation);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-}
-
-function addDonationToTable(donation) {
-    const row = document.createElement("tr");
-
-    row.innerHTML = `
-        <td>${donation.charity}</td>
-        <td>$${donation.amount.toFixed(2)}</td>
-        <td>${donation.date}</td>
-        <td>${donation.message}</td>
-        <td><button class="delete-btn">Delete</button></td>
-    `;
-
-    row.querySelector(".delete-btn").addEventListener("click", function () {
-        deleteDonation(donation);
-        row.remove();
+        saveDonation(donationData);
+        addDonationToTable(donationData);
         updateTotal();
+
+        alert("Donation successfully saved.");
+        event.target.reset();
     });
 
-    tableBody.appendChild(row);
-}
+    function loadDonations() {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        saved.forEach(d => addDonationToTable(d));
+        updateTotal();
+    }
 
-function deleteDonation(target) {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    function saveDonation(donation) {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        saved.push(donation);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    }
 
-    const updated = saved.filter(d =>
-        !(d.charity === target.charity &&
-          d.amount === target.amount &&
-          d.date === target.date &&
-          d.message === target.message)
-    );
+    function addDonationToTable(donation) {
+        const row = document.createElement("tr");
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-}
+        row.innerHTML = `
+            <td>${donation.charity}</td>
+            <td>$${donation.amount.toFixed(2)}</td>
+            <td>${donation.date}</td>
+            <td>${donation.message}</td>
+            <td><button class="delete-btn">Delete</button></td>
+        `;
 
-function updateTotal() {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    const total = saved.reduce((sum, d) => sum + d.amount, 0);
-    totalAmountDisplay.textContent = total.toFixed(2);
-}
+        row.querySelector(".delete-btn").addEventListener("click", function () {
+            deleteDonation(donation);
+            row.remove();
+            updateTotal();
+        });
+
+        tableBody.appendChild(row);
+    }
+
+    function deleteDonation(target) {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+        const updated = saved.filter(d =>
+            !(d.charity === target.charity &&
+              d.amount === target.amount &&
+              d.date === target.date &&
+              d.message === target.message)
+        );
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    }
+
+    function updateTotal() {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        const total = saved.reduce((sum, d) => sum + d.amount, 0);
+        totalAmountDisplay.textContent = total.toFixed(2);
+    }
+});

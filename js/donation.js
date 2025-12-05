@@ -45,16 +45,13 @@ document.getElementById("donation-form")?.addEventListener("submit", function (e
 
     const donationData = createDonationObject(charity, amount, date, message);
 
-    saveDonation(donationData);      
-    addDonationToTable(donationData); 
-    updateTotal();                    
-
-    console.log("Temporary donation object:", donationData);
+    saveDonation(donationData);
+    addDonationToTable(donationData);
+    updateTotal();
 
     alert("Donation successfully saved.");
     event.target.reset();
 });
-
 
 const STORAGE_KEY = "donations";
 const tableBody = document.querySelector("#donation-table tbody");
